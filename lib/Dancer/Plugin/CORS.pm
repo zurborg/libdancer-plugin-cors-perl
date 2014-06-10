@@ -8,11 +8,11 @@ Dancer::Plugin::CORS - A plugin for using cross origin resource sharing
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 DESCRIPTION
 
