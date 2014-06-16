@@ -64,8 +64,6 @@ my %all_cors = (
 
 diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
 
-diag "request GET";
-
 $R = dancer_response(OPTIONS => '/foo', { headers => [
 	'Access-Control-Request-Method' => 'GET',
 	'Origin' => $origin
@@ -80,8 +78,6 @@ header_include("GET /foo (first rule match)", %all_cors
 );
 
 diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
-
-diag "request POST";
 
 $R = dancer_response(OPTIONS => '/foo', { headers => [
 	'Access-Control-Request-Method' => 'POST',
