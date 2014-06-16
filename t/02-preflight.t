@@ -53,7 +53,11 @@ my %all_cors = (
 
 foreach my $resource (qw(/foo /bar)) {
 
+	diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
+
 	$R = dancer_response(OPTIONS => $resource);
+	diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
+
 	is($R->status => 200, "OPTIONS $resource (preflight request, no origin)");
 	header_include("OPTIONS $resource (preflight request, no origin)", %all_cors);
 	
@@ -61,6 +65,8 @@ foreach my $resource (qw(/foo /bar)) {
 		'Access-Control-Request-Method' => 'GET',
 		'Origin' => $origin
 	] });
+	diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
+
 	is($R->status => 200, "OPTIONS $resource (preflight request, with allowed origin)");
 	header_include("OPTIONS $resource (preflight request, with allowed origin)", %all_cors
 	,	'Access-Control-Allow-Origin' => $origin
@@ -72,6 +78,8 @@ foreach my $resource (qw(/foo /bar)) {
 		'Access-Control-Request-Method' => 'GET',
 		'Origin' => $origin.'~'
 	] });
+	diag sprintf "[%s] %s", $_->{level}, $_->{message} for @{read_logs()};
+
 	is($R->status => 200, "OPTIONS $resource (preflight request, with unknown origin)");
 	header_include("OPTIONS $resource (preflight request, with unknown origin)", %all_cors);
 

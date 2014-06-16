@@ -1,6 +1,7 @@
 package Dancer::Plugin::CORS;
 
 use Modern::Perl;
+use Dancer::Plugin::CORS::Sharing;
 
 =head1 NAME
 
@@ -38,6 +39,7 @@ use Carp qw(croak confess);
 use Dancer ':syntax';
 use Dancer::Plugin;
 use Sub::Name;
+use Scalar::Util qw(blessed);
 use URI;
 
 my $routes = {};
@@ -50,65 +52,132 @@ sub _isuri(_) {
 	shift =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|
 }
 
-register(share => sub($%) {
+sub _handle;
+my $current_route;
+
+sub _prefl_handle {
+	debug "[CORS] entered preflight request main subroutine";
+	unless (defined $current_route) {
+		warning "[CORS] current route not defined!";
+		return;
+	}
+	unless(_handle($current_route)) {
+		my $request = Dancer::SharedData->request;
+		while ($current_route = $current_route->next) {
+			if ($current_route->match($request)) {
+				debug "[CORS] going to next handler";
+				pass;
+			}
+        }
+		debug "[CORS] no more rules.";
+	}
+	$current_route = undef;
+}
+
+sub _add_rule($%) {
 	my ($route, %options) = @_;
+	
+	if (blessed $route and $route->isa('Dancer::Route')) {
+		my $prefl = Dancer::App->current->registry->add_route(Dancer::Route->new(
+			method => 'options',
+			code => \&_prefl_handle,
+			options => $route->options,
+			pattern => $route->pattern
+		));
+		$options{method} = uc($route->method);
+		$routes->{$prefl} = [{ %options }];
+		debug "registered preflight route handler for ".$route->method." pattern: ".$route->pattern."\n";
+	}
+	
 	unless (exists $routes->{$route}) {
 		$routes->{$route} = [];
-		if (ref $route) {
-			my $prefl = Dancer::App->current->registry->add_route(Dancer::Route->new(
-				method => 'options',
-				code => sub {},
-				options => $route->options,
-				pattern => $route->pattern
-			));
-			$options{method} = uc($route->method);
-			push @{ $routes->{$prefl} } => \%options;
-		} else {
-			options $route => sub {};
+		unless (ref $route) {
+			debug "registered preflight route handler for any pattern: $route\n";
+			options $route => \&_prefl_handle;
 		}
 	}
 	push @{ $routes->{$route} } => \%options;
-});
+}
 
-hook before => sub {
-	my $route = shift || return;#croak "No argument defined for this hook";
+sub _handle {
+	my $route = shift;
 	my $request = Dancer::SharedData->request;
 	my $path = $request->path_info;
 	
-	return unless (exists $routes->{$path} or exists $routes->{$route});
+	unless (exists $routes->{$path} or exists $routes->{$route}) {
+		debug "[CORS] path $path or route $route did not no matched any rule";
+	}
 	
 	my $preflight = uc $request->method eq 'OPTIONS';
 	
-	my $origin            = scalar($request->header('Origin')) || return;
-	return unless _isuri($origin);
+	debug "[CORS] preflight request" if $preflight;
+	
+	my $origin = scalar($request->header('Origin'));
+	
+	unless (defined $origin) {
+		debug "[CORS] no origin header present in request";
+		return;
+	}
+
+	unless (_isuri($origin)) {
+		debug "[CORS] origin '$origin' is not a URI";
+		return;
+	}
 	
 	my $requested_method  = $preflight
 	                      ? scalar($request->header('Access-Control-Request-Method'))
 						  : $request->method
 						  ;
-	return unless defined $requested_method;
+	unless (defined $requested_method) {
+		debug "[CORS] no request method defined";
+	}
+
 	my @requested_headers = map { s{\s+}{}g; $_ } split /,+/, (scalar($request->header('Access-Control-Request-Headers')) || '');
 	
-	my $ok = 0;
+	my ($ok, $i) = (0, 0);
 	my ($headers, $xoptions);
 	
-	$path = "$route" if exists $routes->{$route};
+	if (exists $routes->{$route}) {
+		$path = "$route";
+		debug "[CORS] dynamic route";
+	} else {
+		debug "[CORS] static route";
+	}
+	
+	my $n = scalar @{$routes->{$path}};
 	
 	RULE: foreach my $options (@{$routes->{$path}}) {
+		debug "[CORS] testing rule ".++$i." of $n";
+		{
+			use Data::Dumper;
+			debug Dumper($options);
+		}
 		$headers = {};
 		if (exists $options->{origin}) {
 			given (ref $options->{origin}) {
 				when ('CODE') {
-					next RULE if !$options->{origin}->(URI->new($origin));
+					if (!$options->{origin}->(URI->new($origin))) {
+						debug "[CORS] origin $origin did not matched against coderef";
+						next RULE;
+					}
 				}
 				when ('ARRAY') {
-					next RULE unless _isin($origin => @{ $options->{origin} });
+					unless (_isin($origin => @{ $options->{origin} })) {
+						debug "[CORS] origin $origin is not in array";
+						next RULE;
+					}
 				}
 				when ('Regexp') {
-					next RULE unless $origin =~ $options->{origin};
+					unless ($origin =~ $options->{origin}) {
+						debug "[CORS] origin $origin did not matched against regexp";
+						next RULE;
+					}
 				}
 				when ('') {
-					next RULE unless $options->{origin} eq $origin;
+					unless ($options->{origin} eq $origin) {
+						debug "[CORS] origin $origin did not matched against static string";
+						next RULE;
+					}
 				}
 				default {
 					confess("unknown origin type: $_");
@@ -136,18 +205,29 @@ hook before => sub {
 		}
 		
 		if (exists $options->{methods}) {
-			next unless _isin(lc $requested_method => map lc, @{ $options->{methods} });
+			unless (_isin(lc $requested_method => map lc, @{ $options->{methods} })) {
+				debug "[CORS] request method not allowed";
+				next RULE;
+			}
 			$headers->{'Access-Control-Allow-Methods'} = join ', ' => map uc, @{ $options->{methods} };
 		} elsif (exists $options->{method}) {
-			next unless $options->{method} eq $requested_method;
+			unless ($options->{method} eq $requested_method) {
+				debug "[CORS] request method '$requested_method' not allowed: ".$options->{method};
+				next RULE;
+			}
 			$headers->{'Access-Control-Allow-Methods'} = $options->{method};
 		}
 		
 		if (exists $options->{headers}) {
 			foreach my $requested_header (@requested_headers) {
-				next RULE unless _isin(lc $requested_header => map lc, @{ $options->{headers} });
+				unless (_isin(lc $requested_header => map lc, @{ $options->{headers} })) {
+					debug "[CORS] requested headers did not match allowed in rule";
+					next RULE;
+				}
 			}
 			$headers->{'Access-Control-Allow-Headers'} = join ', ' => @{ $options->{headers} };
+		} elsif (@requested_headers) {
+			$headers->{'Access-Control-Allow-Headers'} = join ', ' => @requested_headers;
 		}
 
 		if ($preflight and exists $options->{maxage}) {
@@ -155,14 +235,41 @@ hook before => sub {
 		}
 		
 		$ok = 1;
-		$xoptions = $options;
+		var CORS => {%$options};
+		Dancer::SharedData->response->headers(%$headers);
+		{
+			use Data::Dumper;
+			debug Dumper({headers => $headers});
+		}
 		last RULE;
 	}
 
 	if ($ok) {
-		Dancer::SharedData->response->headers(%$headers);
-		var(CORS => $xoptions);
+		debug "[CORS] matched!";
+	} else {
+		debug "[CORS] no rule matched";
 	}
+	
+	return $ok;
+}
+
+register(share => \&_add_rule);
+hook(before => sub {
+	$current_route = shift || return;
+	my $preflight = uc Dancer::SharedData->request->method eq 'OPTIONS';
+	if ($preflight) {
+		debug "[CORS] pre-check: preflight request, handle within main subroutine";
+	} else {
+		debug "[CORS] pre-check: no preflight, handle actual request now";
+		_handle($current_route);
+	}
+});
+
+my $current_sharing;
+register sharing => sub {
+	my $class = __PACKAGE__.'::Sharing';
+	$current_sharing ||= $class->new(@_,_add_rule=>\&_add_rule);
+	return $current_sharing;
 };
 
 =head1 AUTHOR

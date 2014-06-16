@@ -6,44 +6,46 @@ my $origin = 'http://example.com/';
     package Webservice;
     use Dancer;
     use Dancer::Plugin::CORS;
+	
+	my $sub = sub { 1 };
 
-    @_ = get '/code1' => sub { 'foo' };
+    @_ = get '/code1' => $sub;
 	share $_[1]
 	,	origin => sub { shift eq $origin }
 	,	method => 'GET'
 	;
 	
-    @_ = get '/code2' => sub { 'foo' };
+    @_ = get '/code2' => $sub;
 	share $_[1]
 	,	origin => sub { 0 }
 	,	method => 'GET'
 	;
 	
-    @_ = get '/code3' => sub { 'foo' };
+    @_ = get '/code3' => $sub;
 	share $_[1]
 	,	origin => sub { undef }
 	,	method => 'GET'
 	;
 	
-    @_ = get '/code4' => sub { 'foo' };
+    @_ = get '/code4' => $sub;
 	share $_[1]
 	,	origin => sub { 1 }
 	,	method => 'GET'
 	;
 	
-    @_ = get '/array' => sub { 'foo' };
+    @_ = get '/array' => $sub;
 	share $_[1]
 	,	origin => [ $origin ]
 	,	method => 'GET'
 	;
 	
-    @_ = get '/regexp' => sub { 'foo' };
+    @_ = get '/regexp' => $sub;
 	share $_[1]
 	,	origin => qr{^\Q$origin\E$}
 	,	method => 'GET'
 	;
 	
-    @_ = get '/error' => sub { 'foo' };
+    @_ = get '/error' => $sub;
 	share $_[1]
 	,	origin => undef
 	,	method => 'GET'
