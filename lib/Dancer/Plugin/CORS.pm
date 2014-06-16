@@ -193,7 +193,7 @@ sub _handle {
 		if (exists $options->{credentials}) {
 			if (!!$options->{credentials}) {
 				if ($origin eq '*') {
-					warning('The string "*" cannot be used for a resource that supports credentials.');
+					warning('For a resource that supports credentials a origin matcher must be specified.');
 					next RULE;
 				}
 				$headers->{'Access-Control-Allow-Credentials'} = 'true' ;

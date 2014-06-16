@@ -70,7 +70,7 @@ is($R->status => 200, "OPTIONS /bar (preflight request, with allowed origin)");
 header_include("OPTIONS /bar (preflight request, with allowed origin)", %all_cors
 );
 
-ok('The string "*" cannot be used for a resource that supports credentials.' ~~ [ map { $_->{message} } grep { $_->{level} eq 'warning' } @{read_logs()} ]);
+ok('For a resource that supports credentials a origin matcher must be specified.' ~~ [ map { $_->{message} } grep { $_->{level} eq 'warning' } @{read_logs()} ]);
 
 done_testing;
 
