@@ -188,7 +188,6 @@ sub _handle {
 		}
 		$headers->{'Access-Control-Allow-Origin'} = $origin;
 		$headers->{'Vary'} = 'Origin' if $origin ne '*';
-
 		
 		if (exists $options->{credentials}) {
 			if (!!$options->{credentials}) {
@@ -325,32 +324,3 @@ This program is released under the following license: open-source
 
 register_plugin;
 1;
-
-__END__
-
-			if (exists $options->{methods}) {
-				if (exists $options->{methods}->{$requested_method} and !$options->{methods}->{$requested_method}) {
-					next;
-				}
-				$headers->{'Access-Control-Allow-Methods'} =
-					join ', ' =>
-					grep { !!$options->{methods}->{$_} }
-					keys %{ $options->{methods} }
-				;
-			} else {
-				$headers->{'Access-Control-Allow-Methods'} = $requested_method;
-			}
-			
-			if (exists $options->{headers}) {
-				if (exists $options->{headers}->{$requested_headers} and !$options->{headers}->{$requested_headers}) {
-					next;
-				}
-				$headers->{'Access-Control-Allow-Headers'} =
-					join ', ' =>
-					grep { !!$options->{headers}->{$_} }
-					keys %{ $options->{headers} }
-				;
-			} else {
-				$headers->{'Access-Control-Allow-Headers'} = $requested_headers;
-			}
-
