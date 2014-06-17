@@ -1,4 +1,5 @@
 lib/Dancer/Plugin/CORS.pm
+lib/Dancer/Plugin/CORS/Sharing.pm
 LICENSE
 config/BuildOptions.pm
 Makefile.PL
