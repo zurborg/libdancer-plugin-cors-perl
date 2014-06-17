@@ -50,10 +50,10 @@ When you want more than one ruleset, obtain a new instance by calling new():
 sub new($%) {
 	my $class = shift;
 	my %options = (rules => []);
-	if (blessed $class and !@_) {
+	if (blessed $class and $class->isa(__PACKAGE__)) {
 		%options = (%$class, %options);
 	}
-	push %options => @_;
+	%options = (%options, @_);
 	croak "sharing->new should be called inside a dancer app, not outside" unless exists $options{_add_rule};
 	return bless \%options => ref $class || $class;
 }
