@@ -4,7 +4,7 @@ Dancer::Plugin::CORS - A plugin for using cross origin resource sharing
 
 # VERSION
 
-Version 0.02
+Version 0.10
 
 # DESCRIPTION
 
