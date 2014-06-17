@@ -1,6 +1,7 @@
 package Dancer::Plugin::CORS::Sharing;
 
 use Modern::Perl;
+use Carp;
 use Scalar::Util qw(blessed);
 
 =head1 NAME
@@ -17,7 +18,7 @@ our $VERSION = '0.01';
 
 =head1 DESCRIPTION
 
-...
+In order to use many rules with many routes, this helpers class helps you to organize yourself.
 
 =head1 SYNOPSIS
 
@@ -36,19 +37,30 @@ our $VERSION = '0.01';
 	
 =head2 new
 
+A convient way is to use the implicit form of the module. This means you don't have to call new() self, just start with defining rules and add routes.
+
+When you want more than one ruleset, obtain a new instance by calling new():
+
+	my $sharing = sharing->new;
+	$sharing->rule(...);
+	$sharing->add(...);
+	
 =cut
 
 sub new($%) {
 	my $class = shift;
+	my %options = (rules => []);
 	if (blessed $class and !@_) {
-		$class->{rules} = [];
-		return $class;
+		%options = (%$class, %options);
 	}
-	my %options = (rules => [], @_);
+	push %options => @_;
+	croak "sharing->new should be called inside a dancer app, not outside" unless exists $options{_add_rule};
 	return bless \%options => ref $class || $class;
 }
 
-=head2 rule
+=head2 rule(%options)
+
+This method defines a optionset. See L<Dancer::Plugin::CORS::share> for a explaination of valid options.
 
 =cut
 
@@ -57,7 +69,13 @@ sub rule($%) {
 	push @{$self->{rules}} => \%options;
 }
 
-=head2 add
+=head2 add(@routes)
+
+This method finally calls L<Dancer::Plugin::CORS::share> for any route. @routes maybe a list of arrayrefs of L<Dancer::Route> objects or paths.
+
+Note: L<Dancer::Plugin::CRUD::resource> returns a hash instead of a list. Use values() to obtain the route objects:
+
+	sharing->add(values(resource(...)));
 
 =cut
 
@@ -71,6 +89,16 @@ sub add {
 			}
 		}
 	}
+}
+
+=head2 clear
+
+This method clears all previously defined rules.
+
+=cut
+
+sub clear {
+	shift->{rules} = [];
 }
 
 =head1 AUTHOR

@@ -13,17 +13,17 @@ Version 0.02
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.021';
 
 =head1 DESCRIPTION
 
-...
+Cross origin resource sharing is a feature used by modern web browser to bypass cross site scripting restrictions. A webservice can provide those rules from which origin a client is allowed to make cross-site requests. This module helps you to setup such rules.
 
 =head1 SYNOPSIS
 
     use Dancer::Plugin::CORS;
 
-    get '/foo' => sub { ... }
+    get '/foo' => sub { ... };
 	share '/foo' =>
 		origin => 'http://localhost/',
 		credentials => 1,
@@ -254,7 +254,67 @@ sub _handle {
 	return $ok;
 }
 
+=head1 KEYWORDS
+
+=head2 share(C<$route>, C<%options>)
+
+The parameter C<$route> may be any valid path like used I<get>, I<post>, I<put>, I<delete> or I<patch> but not I<option>.
+
+Alternatively a L<Dancer::Route> object may be used instead:
+
+	$route = get '/' => sub { ... };
+	share $route => ... ;
+
+For any route more than one rule may be defined. The order is relevant: the first matching rule wins.
+
+Following keywords recognized by C<%options>:
+
+=over 4
+
+=item I<origin>
+
+This key defines a static origin (scalar), a list (arrayref), a regex or a subroutine.
+
+If not specified, any origin is allowed.
+
+If a subroutine is used, the first passed parameter is a L<URI> object. It should return a true value if this origin is allowed to access the route in question; otherwise false.
+
+	origin => sub { shift->host ~~ [ 'localhost', '127.0.0.1', '::1' ] } # allow only from localhost
+
+Hint: a origin consists of protocol, hostname and maybe a port. Examples: C<http://www.example.com>, C<https://securesite.com>, C<http://localhost:3000>, C<http://127.0.0.1>, C<http://[::1]>
+
+=item I<credentials>
+
+This indicates whether cookies, HTTP authentication and/or client-side SSL certificates may sent by a client. Allowed values are C<0> or C<1>.
+
+This option must be used together with I<origin>.
+
+=item I<expose>
+
+A comma-seperated list of headers, that a client may extract from response for use in a client application.
+
+=item I<methods>
+
+A arrayref of allowed methods. If no methods are specified, any methods are allowed.
+
+=item I<method>
+
+A string containing a single supported method. This parameter is autofilled when I<share()> is used together with a L<Dancer::Route> object. If no method is specified, any method is allowed.
+
+=item I<headers>
+
+A arrayref of allowed request headers. In most cases that should be C<[ 'X-Requested-With' ]> when ajax requests are made. If not headers are specified, all requested headers are allowed.
+
+=item I<maxage>
+
+A maximum time (in seconds) a client may cache a preflight request. This can decrease the amount of requests made to the webservice.
+
+=back
+
+=cut
+
 register(share => \&_add_rule);
+
 hook(before => sub {
 	$current_route = shift || return;
 	my $preflight = uc Dancer::SharedData->request->method eq 'OPTIONS';
@@ -267,6 +327,15 @@ hook(before => sub {
 });
 
 my $current_sharing;
+
+=head2 sharing
+
+This keyword is a helper for re-using rules for many routes.
+
+See L<Dancer::Plugin::CORS::Sharing> for more information about this feature.
+
+=cut
+
 register sharing => sub {
 	my $class = __PACKAGE__.'::Sharing';
 	$current_sharing ||= $class->new(@_,_add_rule=>\&_add_rule);
