@@ -6,6 +6,8 @@ Makefile.PL
 MANIFEST
 README
 INSTALL
+SIGNATURE
+t/00-signature.t
 t/pod-coverage.t
 t/pod.t
 t/00-load.t
@@ -15,3 +17,5 @@ t/03-options.t
 t/04-credentials.t
 t/05-origin.t
 t/06-multi.t
+t/07-methods.t
+t/08-sharing.t
