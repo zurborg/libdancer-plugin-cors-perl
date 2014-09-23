@@ -67,6 +67,7 @@ This method defines a optionset. See L<Dancer::Plugin::CORS::share> for a explai
 sub rule($%) {
 	my ($self, %options) = @_;
 	push @{$self->{rules}} => \%options;
+	$self;
 }
 
 =head2 add(@routes)
@@ -89,6 +90,7 @@ sub add {
 			}
 		}
 	}
+	$self;
 }
 
 =head2 clear
@@ -99,6 +101,7 @@ This method clears all previously defined rules.
 
 sub clear {
 	shift->{rules} = [];
+	$self;
 }
 
 =head1 AUTHOR
