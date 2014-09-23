@@ -295,7 +295,7 @@ A comma-seperated list of headers, that a client may extract from response for u
 
 =item I<methods>
 
-A arrayref of allowed methods. If no methods are specified, any methods are allowed.
+A arrayref of allowed methods. If no methods are specified, all methods are allowed.
 
 =item I<method>
 
