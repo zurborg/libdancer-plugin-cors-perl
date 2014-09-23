@@ -100,7 +100,8 @@ This method clears all previously defined rules.
 =cut
 
 sub clear {
-	shift->{rules} = [];
+	my $self = shift;
+	$self->{rules} = [];
 	$self;
 }
 
