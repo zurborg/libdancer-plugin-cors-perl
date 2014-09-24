@@ -19,3 +19,4 @@ t/05-origin.t
 t/06-multi.t
 t/07-methods.t
 t/08-sharing.t
+t/09-timing.t
