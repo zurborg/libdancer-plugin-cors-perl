@@ -31,6 +31,7 @@ Cross origin resource sharing is a feature used by modern web browser to bypass 
 		method => 'GET',
 		headers => [qw[ X-Requested-With ]],
 		maxage => 7200,
+		timing => 1,
 	;
 
 =cut
@@ -191,6 +192,14 @@ sub _handle {
 		$headers->{'Access-Control-Allow-Origin'} = $origin;
 		$headers->{'Vary'} = 'Origin' if $origin ne '*';
 		
+		if (exists $options->{timing}) {
+			if (defined $options->{timing} and $options->{timing} eq '1') {
+				$headers->{'Timing-Allow-Origin'} = $headers->{'Access-Control-Allow-Origin'};
+			} else {
+				$headers->{'Timing-Allow-Origin'} = 'null';
+			}
+		}
+		
 		if (exists $options->{credentials}) {
 			if (!!$options->{credentials}) {
 				if ($origin eq '*') {
@@ -308,6 +317,10 @@ A arrayref of allowed request headers. In most cases that should be C<[ 'X-Reque
 =item I<maxage>
 
 A maximum time (in seconds) a client may cache a preflight request. This can decrease the amount of requests made to the webservice.
+
+=item I<timing>
+
+Allow access to the resource timing information. If set to 1, the header C<Timing-Allow-Origin> is set to the same value as I<Access-Control-Allow-Origin>. Otherwise, its set to the value I<null>. If the keyword is not present, no I<Timing-Allow-Origin> header will be appended to response. See L<http://www.w3.org/TR/resource-timing/#cross-origin-resources> for more information.
 
 =back
 
