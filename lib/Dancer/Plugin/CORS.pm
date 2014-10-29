@@ -58,7 +58,10 @@ sub _isuri(_) {
 	shift =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|
 }
 
+sub _prefl_handle;
+sub _add_rule($%);
 sub _handle;
+
 my $current_route;
 
 sub _prefl_handle {
@@ -83,6 +86,10 @@ sub _prefl_handle {
 sub _add_rule($%) {
 	my ($route, %options) = @_;
 	
+	if (ref $route eq 'ARRAY') {
+	    return map { _add_rule($_, %options) } @$route;
+	}
+
 	if (blessed $route and $route->isa('Dancer::Route')) {
 		my $prefl = Dancer::App->current->registry->add_route(Dancer::Route->new(
 			method => 'options',
@@ -145,9 +152,9 @@ sub _handle {
 	
 	if (exists $routes->{$route}) {
 		$path = "$route";
-		debug "[CORS] dynamic route" if DEBUG;
+		debug "[CORS] dynamic route: $path" if DEBUG;
 	} else {
-		debug "[CORS] static route" if DEBUG;
+		debug "[CORS] static route: $path" if DEBUG;
 	}
 	
 	my $n = scalar @{$routes->{$path}};
@@ -269,8 +276,17 @@ The parameter C<$route> may be any valid path like used I<get>, I<post>, I<put>,
 
 Alternatively a L<Dancer::Route> object may be used instead:
 
-	$route = get '/' => sub { ... };
+	$route = post '/' => sub { ... };
 	share $route => ... ;
+
+Or a arrayref to one or more Routes:
+
+	@head_and_get = get '/' => sub { ... };
+	share \@head_and_get => ...;
+
+This syntax works too:
+
+	share [ get ('/' => sub { ... }) ] => ...;
 
 For any route more than one rule may be defined. The order is relevant: the first matching rule wins.
 
