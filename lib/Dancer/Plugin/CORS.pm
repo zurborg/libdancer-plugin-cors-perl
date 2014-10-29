@@ -1,7 +1,7 @@
 package Dancer::Plugin::CORS;
 
-use Modern::Perl;
-use Dancer::Plugin::CORS::Sharing;
+use strict;
+use warnings;
 
 =head1 NAME
 
@@ -42,6 +42,8 @@ use Dancer::Plugin;
 use Sub::Name;
 use Scalar::Util qw(blessed);
 use URI;
+
+use Dancer::Plugin::CORS::Sharing;
 
 use constant DEBUG => 0;
 
