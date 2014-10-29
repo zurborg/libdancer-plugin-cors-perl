@@ -330,7 +330,7 @@ A string containing a single supported method. This parameter is autofilled when
 
 =item I<headers>
 
-A arrayref of allowed request headers. In most cases that should be C<[ 'X-Requested-With' ]> when ajax requests are made. If not headers are specified, all requested headers are allowed.
+A arrayref of allowed request headers. In most cases that should be C<[ 'X-Requested-With' ]> when ajax requests are made. If no headers are specified, all requested headers are allowed.
 
 =item I<maxage>
 
