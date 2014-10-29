@@ -1,6 +1,7 @@
 package Dancer::Plugin::CORS::Sharing;
 
-use Modern::Perl;
+use strict;
+use warnings;
 use Carp;
 use Scalar::Util qw(blessed);
 
