@@ -48,7 +48,8 @@ use constant DEBUG => 0;
 my $routes = {};
 
 sub _isin($@) {
-	shift ~~ \@_;
+	my $test = shift;
+	scalar grep { $test eq $_ } @_;
 }
 
 sub _isuri(_) {
@@ -157,34 +158,29 @@ sub _handle {
 		}
 		$headers = {};
 		if (exists $options->{origin}) {
-			given (ref $options->{origin}) {
-				when ('CODE') {
-					if (!$options->{origin}->(URI->new($origin))) {
-						debug "[CORS] origin $origin did not matched against coderef" if DEBUG;
-						next RULE;
-					}
+			my $reftype = ref $options->{origin};
+			if ($reftype eq 'CODE') {
+				if (!$options->{origin}->(URI->new($origin))) {
+					debug "[CORS] origin $origin did not matched against coderef" if DEBUG;
+					next RULE;
 				}
-				when ('ARRAY') {
-					unless (_isin($origin => @{ $options->{origin} })) {
-						debug "[CORS] origin $origin is not in array" if DEBUG;
-						next RULE;
-					}
+			} elsif ($reftype eq 'ARRAY') {
+				unless (_isin $origin => @{ $options->{origin} }) {
+					debug "[CORS] origin $origin is not in array" if DEBUG;
+					next RULE;
 				}
-				when ('Regexp') {
-					unless ($origin =~ $options->{origin}) {
-						debug "[CORS] origin $origin did not matched against regexp" if DEBUG;
-						next RULE;
-					}
+			} elsif ($reftype eq 'Regexp') {
+				unless ($origin =~ $options->{origin}) {
+					debug "[CORS] origin $origin did not matched against regexp" if DEBUG;
+					next RULE;
 				}
-				when ('') {
-					unless ($options->{origin} eq $origin) {
-						debug "[CORS] origin $origin did not matched against static string" if DEBUG;
-						next RULE;
-					}
+			} elsif ($reftype eq '') {
+				unless ($options->{origin} eq $origin) {
+					debug "[CORS] origin $origin did not matched against static string" if DEBUG;
+					next RULE;
 				}
-				default {
-					confess("unknown origin type: $_");
-				}
+			} else {
+				confess("unknown origin type: $reftype");
 			}
 		} else {
 			$origin = '*';
@@ -215,7 +211,7 @@ sub _handle {
 		}
 		
 		if (exists $options->{methods}) {
-			unless (_isin(lc $requested_method => map lc, @{ $options->{methods} })) {
+			unless (_isin lc $requested_method => map lc, @{ $options->{methods} }) {
 				debug "[CORS] request method not allowed" if DEBUG;
 				next RULE;
 			}
@@ -230,7 +226,7 @@ sub _handle {
 		
 		if (exists $options->{headers}) {
 			foreach my $requested_header (@requested_headers) {
-				unless (_isin(lc $requested_header => map lc, @{ $options->{headers} })) {
+				unless (_isin lc $requested_header => map lc, @{ $options->{headers} }) {
 					debug "[CORS] requested headers did not match allowed in rule" if DEBUG;
 					next RULE;
 				}
@@ -288,7 +284,11 @@ If not specified, any origin is allowed.
 
 If a subroutine is used, the first passed parameter is a L<URI> object. It should return a true value if this origin is allowed to access the route in question; otherwise false.
 
-	origin => sub { shift->host ~~ [ 'localhost', '127.0.0.1', '::1' ] } # allow only from localhost
+	origin => sub {
+		my $host = shift->host;
+		# allow only from localhost
+		grep { $host eq $_ } qw(localhost 127.0.0.1 ::1)
+	}
 
 Hint: a origin consists of protocol, hostname and maybe a port. Examples: C<http://www.example.com>, C<https://securesite.com>, C<http://localhost:3000>, C<http://127.0.0.1>, C<http://[::1]>
 
