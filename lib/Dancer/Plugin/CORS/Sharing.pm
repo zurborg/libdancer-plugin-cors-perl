@@ -1,21 +1,12 @@
-package Dancer::Plugin::CORS::Sharing;
-
 use strict;
 use warnings;
+package Dancer::Plugin::CORS::Sharing;
+# ABSTRACT: Helper class for I<sharing> method
+
 use Carp;
 use Scalar::Util qw(blessed);
 
-=head1 NAME
-
-Dancer::Plugin::CORS::Sharing - Helper class for I<sharing> keyword
-
-=head1 VERSION
-
-Version 0.11
-
-=cut
-
-our $VERSION = '0.11';
+# VERSION
 
 =head1 DESCRIPTION
 
@@ -34,9 +25,7 @@ In order to use many rules with many routes, this helpers class helps you to org
 	
 	sharing->add($route);
 
-=head1 METHODS
-	
-=head2 new
+=method new
 
 A convient way is to use the implicit form of the module. This means you don't have to call new() self, just start with defining rules and add routes.
 
@@ -59,7 +48,7 @@ sub new($%) {
 	return bless \%options => ref $class || $class;
 }
 
-=head2 rule(%options)
+=method rule(%options)
 
 This method defines a optionset. See L<Dancer::Plugin::CORS::share> for a explaination of valid options.
 
@@ -71,7 +60,7 @@ sub rule($%) {
 	$self;
 }
 
-=head2 add(@routes)
+=method add(@routes)
 
 This method finally calls L<Dancer::Plugin::CORS::share> for any route. @routes maybe a list of arrayrefs of L<Dancer::Route> objects or paths.
 
@@ -94,7 +83,7 @@ sub add {
 	$self;
 }
 
-=head2 clear
+=method clear
 
 This method clears all previously defined rules.
 
@@ -106,24 +95,12 @@ sub clear {
 	$self;
 }
 
-=head1 AUTHOR
-
-David Zurborg, C<< <zurborg@cpan.org> >>
-
 =head1 SEE ALSO
 
 =over
 
-=item L<Dancer::Plugin::CORS>
+=item * L<Dancer::Plugin::CORS>
 
 =back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2014 David Zurborg, all rights reserved.
-
-This program is released under the following license: open-source
-
-=cut
 
 1;

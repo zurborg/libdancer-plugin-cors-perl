@@ -1,19 +1,7 @@
-package Dancer::Plugin::CORS;
-
 use strict;
 use warnings;
-
-=head1 NAME
-
-Dancer::Plugin::CORS - A plugin for using cross origin resource sharing
-
-=head1 VERSION
-
-Version 0.12
-
-=cut
-
-our $VERSION = '0.12';
+package Dancer::Plugin::CORS;
+# ABSTRACT: A plugin for using cross origin resource sharing
 
 =head1 DESCRIPTION
 
@@ -46,6 +34,8 @@ use URI;
 use Dancer::Plugin::CORS::Sharing;
 
 use constant DEBUG => 0;
+
+# VERSION
 
 my $routes = {};
 
@@ -268,9 +258,7 @@ sub _handle {
 	return $ok;
 }
 
-=head1 KEYWORDS
-
-=head2 share(C<$route>, C<%options>)
+=method share(C<$route>, C<%options>)
 
 The parameter C<$route> may be any valid path like used I<get>, I<post>, I<put>, I<delete> or I<patch> but not I<option>.
 
@@ -359,7 +347,7 @@ hook(before => sub {
 
 my $current_sharing;
 
-=head2 sharing
+=method sharing
 
 This keyword is a helper for re-using rules for many routes.
 
@@ -372,57 +360,6 @@ register sharing => sub {
 	$current_sharing ||= $class->new(@_,_add_rule=>\&_add_rule);
 	return $current_sharing;
 };
-
-=head1 AUTHOR
-
-David Zurborg, C<< <zurborg@cpan.org> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests trough my project management tool
-at L<http://development.david-zurb.org/projects/libdancer-plugin-cors-perl/issues/new>.  I
-will be notified, and then you'll automatically be notified of progress on
-your bug as I make changes.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Dancer::Plugin::CORS
-
-You can also look for information at:
-
-=over 4
-
-=item * Redmine: Homepage of this module
-
-L<http://development.david-zurb.org/projects/libdancer-plugin-cors-perl>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dancer-Plugin-CORS>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Dancer-Plugin-CORS>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Dancer-Plugin-CORS>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Dancer-Plugin-CORS/>
-
-=back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2014 David Zurborg, all rights reserved.
-
-This program is released under the following license: open-source
-
-=cut
 
 register_plugin;
 1;
