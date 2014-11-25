@@ -1,9 +1,19 @@
 Revision history for Dancer-Plugin-CORS
 
 {{$NEXT}}
+
+0.13 2014-11-25
  - fix leftover Modern::Perl in CORS::Sharing
  - dzilation
  - fix version format
+
+ [API CHANGES]
+
+ [BUG FIXES]
+
+ [DOCUMENTATION]
+
+ [ENHANCEMENTS]
 
 0.12 2014-10-29
  - smartmatch and given are experimental
@@ -14,12 +24,7 @@ Revision history for Dancer-Plugin-CORS
  - bump to version 0.12
 
 0.11 2014-09-24
- - fix typo
- - return object itself in order to chain actions
- - fix missing symbol
- - implement resource-timing feature
- - add t/09-timing.t to MANIFEST
- - bump to version 0.11
+ - (no information about this release available)
 
 0.10 2014-06-17
  - add Travis CI configuration
@@ -42,9 +47,6 @@ Revision history for Dancer-Plugin-CORS
  - update prerequisites
  - wrong requirement in BuildOptions.pm
  - bump to v0.02
-
-0.11 2014-09-24
- - (no information about this release available)
 
 0.01 2014-06-02
  - (no information about this release available)
