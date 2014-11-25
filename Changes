@@ -1,23 +1,25 @@
 Revision history for Dancer-Plugin-CORS
 
 {{$NEXT}}
- - enable Module::Signature
- - dont make signatures anymore
- - fix typo
- - return object itself in order to chain actions
- - fix missing symbol
- - implement resource-timing feature
- - add t/09-timing.t to MANIFEST
- - bump to version 0.11
+ - fix leftover Modern::Perl in CORS::Sharing
+ - dzilation
+ - fix version format
+
+0.12 2014-10-29
  - smartmatch and given are experimental
  - use strict and warnings directly
  - allow arrayrefs to be passed
  - fix experimental warning
  - fix typo
  - bump to version 0.12
- - fix leftover Modern::Perl in CORS::Sharing
- - dzilation
- - fix version format
+
+0.11 2014-09-24
+ - fix typo
+ - return object itself in order to chain actions
+ - fix missing symbol
+ - implement resource-timing feature
+ - add t/09-timing.t to MANIFEST
+ - bump to version 0.11
 
 0.10 2014-06-17
  - add Travis CI configuration
