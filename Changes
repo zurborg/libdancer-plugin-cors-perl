@@ -1,6 +1,7 @@
 Revision history for Dancer-Plugin-CORS
 
 {{$NEXT}}
+ - pass perlcritic tests
 
 0.130 2014-11-30
  - change version format
