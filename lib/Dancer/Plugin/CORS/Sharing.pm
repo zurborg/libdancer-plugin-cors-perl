@@ -37,7 +37,7 @@ When you want more than one ruleset, obtain a new instance by calling new():
 	
 =cut
 
-sub new($%) {
+sub new {
 	my $class = shift;
 	my %options = (rules => []);
 	if (blessed $class and $class->isa(__PACKAGE__)) {
@@ -54,7 +54,7 @@ This method defines a optionset. See L<Dancer::Plugin::CORS::share> for a explai
 
 =cut
 
-sub rule($%) {
+sub rule {
 	my ($self, %options) = @_;
 	push @{$self->{rules}} => \%options;
 	$self;

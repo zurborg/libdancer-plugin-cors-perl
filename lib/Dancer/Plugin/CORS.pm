@@ -39,17 +39,17 @@ use constant DEBUG => 0;
 
 my $routes = {};
 
-sub _isin($@) {
+sub _isin {
 	my $test = shift;
 	scalar grep { $test eq $_ } @_;
 }
 
-sub _isuri(_) {
+sub _isuri {
 	shift =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|
 }
 
 sub _prefl_handle;
-sub _add_rule($%);
+sub _add_rule;
 sub _handle;
 
 my $current_route;
@@ -73,7 +73,7 @@ sub _prefl_handle {
 	$current_route = undef;
 }
 
-sub _add_rule($%) {
+sub _add_rule {
 	my ($route, %options) = @_;
 	
 	if (ref $route eq 'ARRAY') {
@@ -135,7 +135,7 @@ sub _handle {
 		debug "[CORS] no request method defined" if DEBUG;
 	}
 
-	my @requested_headers = map { s{\s+}{}g; $_ } split /,+/, (scalar($request->header('Access-Control-Request-Headers')) || '');
+	my @requested_headers = map { my $x = $_; $x =~ s{\s+}{}g; $x } split /,+/, (scalar($request->header('Access-Control-Request-Headers')) || '');
 	
 	my ($ok, $i) = (0, 0);
 	my ($headers, $xoptions);
