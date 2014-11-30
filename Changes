@@ -2,6 +2,9 @@ Revision history for Dancer-Plugin-CORS
 
 {{$NEXT}}
 
+0.130 2014-11-30
+ - change version format
+
 0.13 2014-11-25
  - fix leftover Modern::Perl in CORS::Sharing
  - dzilation
